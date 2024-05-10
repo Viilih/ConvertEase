@@ -7,6 +7,7 @@ export type FilesState = {
   files: {
     fileContent: File[];
     id: string;
+    to: string;
   }[];
   isHover: boolean;
 };
@@ -18,6 +19,7 @@ export type FilesActions = {
   ) => void;
   removeFile: (id: string) => void;
   setIsHover: (isHover: boolean) => void;
+  setFormatToConvertFile: (type: string, id: string) => void;
 };
 
 export type FilesStore = FilesState & FilesActions;
@@ -32,21 +34,28 @@ export const createFilesStore = (
 ) => {
   return createStore<FilesStore>()((set) => ({
     ...initialState,
-    addFile: (acceptedFiles, _) => {
+    addFile: useCallback((acceptedFiles, _) => {
       if (acceptedFiles?.length > 0) {
         set((state) => ({
           files: [
             ...state.files,
-            { fileContent: [...acceptedFiles], id: uuidv4() },
+            { fileContent: [...acceptedFiles], id: uuidv4(), to: "" },
           ],
         }));
       }
-    },
+    }, []),
     removeFile: (id) => {
       set((state) => ({ files: state.files.filter((file) => file.id !== id) }));
     },
     setIsHover: (isHover) => {
       set({ isHover });
+    },
+    setFormatToConvertFile: (type, id) => {
+      set((state) => ({
+        files: state.files.map((file) =>
+          file.id === id ? { ...file, to: type } : file
+        ),
+      }));
     },
   }));
 };

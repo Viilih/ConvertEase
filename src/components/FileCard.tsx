@@ -17,6 +17,7 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import { Button } from "./ui/button";
 import { useEffect, useState } from "react";
+import { useFileStore } from "@/providers/file-store-provider";
 interface IFileCard {
   fileContent: {
     file: File;
@@ -62,6 +63,7 @@ const extensions = {
 };
 const FileCard = ({ fileContent, removeFile }: IFileCard) => {
   const { file, id } = fileContent;
+  const { setFormatToConvertFile } = useFileStore((state) => state);
   const getIconFromFileType = (fileType: string) => {
     switch (true) {
       case fileType.includes("image"):
@@ -77,25 +79,40 @@ const FileCard = ({ fileContent, removeFile }: IFileCard) => {
   const [typeOptions, setTypeOptions] = useState<string[]>([]);
   const listExtensions = () => {
     if (file.type.includes("image")) {
-      setTypeOptions(extensions.image);
-      // return (
-      //   <Tabs defaultValue="images" className="w-[200px]">
-      //     <TabsTrigger value="images">Image</TabsTrigger>
-      //     <TabsContent value="images">
-      //       {extensions.image.map((imageType) => (
-      //         <div>
-      //           <span>{imageType}</span>
-      //         </div>
-      //       ))}
-      //     </TabsContent>
-      //   </Tabs>
-      // );
+      {
+        extensions.image?.map((type) => (
+          <Button
+            className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
+            key={Math.random()}
+          >
+            {type}
+          </Button>
+        ));
+      }
     }
     if (file.type.includes("video")) {
-      setTypeOptions([...extensions.video, ...extensions.audio]);
+      {
+        extensions.video?.map((type) => (
+          <Button
+            className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
+            key={Math.random()}
+          >
+            {type}
+          </Button>
+        ));
+      }
     }
     if (file.type.includes("audio")) {
-      setTypeOptions(extensions.audio);
+      {
+        extensions.audio?.map((type) => (
+          <Button
+            className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
+            key={Math.random()}
+          >
+            {type}
+          </Button>
+        ));
+      }
     }
   };
 
@@ -117,15 +134,53 @@ const FileCard = ({ fileContent, removeFile }: IFileCard) => {
           </SelectTrigger>
           <SelectContent className="focus:ring-offset-0  bg-slate-900 p-1">
             <Tabs defaultValue="images" className="w-[300px]">
-              <TabsList>
-                <TabsTrigger value="images">Images</TabsTrigger>
+              <TabsList className="">
+                {file.type.includes("image") && (
+                  <TabsTrigger value="images">Images</TabsTrigger>
+                )}
+                {file.type.includes("video") && (
+                  <>
+                    <TabsTrigger value="video">Video</TabsTrigger>
+                    <TabsTrigger value="audio">Audio</TabsTrigger>
+                  </>
+                )}
+                {file.type.includes("audio") && (
+                  <TabsTrigger value="audio">Audio</TabsTrigger>
+                )}
               </TabsList>
-              <TabsContent value="images" className="">
-                <div className="grid grid-cols-3 gap-4">
-                  {typeOptions?.map((type) => (
+              <TabsContent value="video" className="">
+                <div className="grid grid-cols-4 gap-4">
+                  {extensions.video.map((type) => (
                     <Button
                       className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
                       key={Math.random()}
+                      onClick={() => setFormatToConvertFile(type, id)}
+                    >
+                      {type}
+                    </Button>
+                  ))}
+                </div>
+              </TabsContent>
+              <TabsContent value="audio" className="">
+                <div className="grid grid-cols-3 gap-4">
+                  {extensions.audio.map((type) => (
+                    <Button
+                      className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
+                      key={Math.random()}
+                      onClick={() => setFormatToConvertFile(type, id)}
+                    >
+                      {type}
+                    </Button>
+                  ))}
+                </div>
+              </TabsContent>
+              <TabsContent value="images">
+                <div className="grid grid-cols-3 gap-4">
+                  {extensions.image.map((type) => (
+                    <Button
+                      className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
+                      key={Math.random()}
+                      onClick={() => setFormatToConvertFile(type, id)}
                     >
                       {type}
                     </Button>
