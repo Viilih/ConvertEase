@@ -3,11 +3,18 @@ import { FileRejection } from "react-dropzone";
 import { createStore } from "zustand/vanilla";
 import { v4 as uuidv4 } from "uuid";
 
+export enum FileConvertingStatus {
+  Blank = 1,
+  Converting = 2,
+  Success = 3,
+  Failed = 4,
+}
 export type FilesState = {
   files: {
     fileContent: File[];
     id: string;
     to: string;
+    converting: FileConvertingStatus;
   }[];
   isHover: boolean;
 };
@@ -20,6 +27,7 @@ export type FilesActions = {
   removeFile: (id: string) => void;
   setIsHover: (isHover: boolean) => void;
   setFormatToConvertFile: (type: string, id: string) => void;
+  setFileStatus: (id: string, status: FileConvertingStatus) => void;
 };
 
 export type FilesStore = FilesState & FilesActions;
@@ -39,7 +47,12 @@ export const createFilesStore = (
         set((state) => ({
           files: [
             ...state.files,
-            { fileContent: [...acceptedFiles], id: uuidv4(), to: "" },
+            {
+              fileContent: [...acceptedFiles],
+              id: uuidv4(),
+              to: "",
+              converting: FileConvertingStatus.Blank,
+            },
           ],
         }));
       }
@@ -47,6 +60,12 @@ export const createFilesStore = (
     removeFile: (id) => {
       set((state) => ({ files: state.files.filter((file) => file.id !== id) }));
     },
+    setFileStatus: (id, status) =>
+      set((state) => ({
+        files: state.files.map((file) =>
+          file.id === id ? { ...file, converting: status } : file
+        ),
+      })),
     setIsHover: (isHover) => {
       set({ isHover });
     },

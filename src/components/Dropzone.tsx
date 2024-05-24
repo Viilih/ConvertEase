@@ -1,19 +1,27 @@
 "use client";
 import React, { useEffect, useRef } from "react";
+import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { v4 as uuidv4 } from "uuid";
-import { RiFileUploadFill, RiAddCircleFill } from "react-icons/ri";
+import {
+  RiFileUploadFill,
+  RiAddCircleFill,
+  RiDownloadFill,
+} from "react-icons/ri";
 import FileContainer from "./FileContainer";
 import FileCard from "./FileCard";
 import { Button } from "./ui/button";
 import { useFileStore } from "@/providers/file-store-provider";
 import { useDropzone } from "react-dropzone";
 import { useToast } from "./ui/use-toast";
+import { loadFfmpegService } from "@/utils/ffmpeg/loadFfmpeg";
+import { convertFile } from "@/utils/ffmpeg/convertFile";
+import { FileConvertingStatus } from "@/stores/fille-store";
 
 const Dropzone = () => {
+  const ffmpegRef = useRef<any>(null);
   const { toast } = useToast();
-  const { addFile, removeFile, files, isHover, setIsHover } = useFileStore(
-    (state) => state
-  );
+  const { addFile, removeFile, files, isHover, setIsHover, setFileStatus } =
+    useFileStore((state) => state);
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
       "image/*": [],
@@ -38,9 +46,30 @@ const Dropzone = () => {
     },
     onFileDialogCancel() {},
   });
-
   const dropzoneRef = useRef<HTMLDivElement>(null);
+  const ConvertAll = async () => {
+    files.map(async (file) => {
+      setFileStatus(file.id, FileConvertingStatus.Converting);
 
+      try {
+        if (file.to === "") {
+          toast({
+            variant: "destructive",
+            title: "At least one type of format should be selected",
+          });
+          return;
+        }
+        await convertFile(ffmpegRef.current, file);
+        setFileStatus(file.id, FileConvertingStatus.Success);
+      } catch (error) {
+        toast({
+          variant: "destructive",
+          title: "Something went wrong during the operation",
+        });
+        setFileStatus(file.id, FileConvertingStatus.Failed);
+      }
+    });
+  };
   useEffect(() => {
     const handleFocus = () => {
       dropzoneRef.current?.focus();
@@ -50,6 +79,14 @@ const Dropzone = () => {
       handleFocus();
     }
   }, [files]);
+
+  useEffect(() => {
+    loadFfmpeg();
+  }, []);
+  const loadFfmpeg = async () => {
+    const ffmpegResponse: FFmpeg = await loadFfmpegService();
+    ffmpegRef.current = ffmpegResponse;
+  };
   return (
     <section className="container flex flex-col gap-8">
       <div {...getRootProps({ className: "dropzone" })}>
@@ -58,7 +95,7 @@ const Dropzone = () => {
         {files.length === 0 && (
           <FileContainer dropping={isHover}>
             {isHover ? (
-              <span className="text-white text-xl">Right here </span>
+              <span className="text-white text-xl">Right here</span>
             ) : (
               <>
                 <div className="text-6xl text-white">
@@ -82,7 +119,12 @@ const Dropzone = () => {
             return (
               <li key={uuidv4()}>
                 <FileCard
-                  fileContent={{ file: file.fileContent[0], id: file.id }}
+                  fileContent={{
+                    file: file.fileContent[0],
+                    id: file.id,
+                    to: file.to,
+                    convertingStatus: file.converting,
+                  }}
                   removeFile={removeFile}
                 />
               </li>
@@ -102,6 +144,18 @@ const Dropzone = () => {
           </div>
         )}
       </section>
+      <div className="flex justify-end">
+        <Button
+          variant="secondary"
+          className="w-[150px]"
+          onClick={() => {
+            ConvertAll();
+          }}
+        >
+          <RiDownloadFill />
+          Convert now
+        </Button>
+      </div>
     </section>
   );
 };

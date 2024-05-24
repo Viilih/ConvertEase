@@ -4,28 +4,36 @@ import {
   RiFileImageFill,
   RiFileMusicFill,
   RiCloseFill,
+  RiCheckboxCircleLine,
+  RiCloseCircleLine,
 } from "react-icons/ri";
 import {
   Select,
   SelectContent,
-  SelectGroup,
   SelectItem,
-  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "./ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
+import CircleLoader from "react-spinners/ClipLoader";
 import { Button } from "./ui/button";
-import { useEffect, useState } from "react";
 import { useFileStore } from "@/providers/file-store-provider";
+import { FileConvertingStatus } from "@/stores/fille-store";
+import { CSSProperties } from "react";
 interface IFileCard {
   fileContent: {
     file: File;
     id: string;
+    to: string;
+    convertingStatus: FileConvertingStatus;
   };
   removeFile: (id: string) => void;
 }
-
+const override: CSSProperties = {
+  display: "block",
+  margin: "0 auto",
+  borderColor: "white",
+};
 const extensions = {
   image: [
     "jpg",
@@ -62,7 +70,8 @@ const extensions = {
   audio: ["mp3", "wav", "ogg", "aac", "wma", "flac", "m4a"],
 };
 const FileCard = ({ fileContent, removeFile }: IFileCard) => {
-  const { file, id } = fileContent;
+  const { file, id, to, convertingStatus } = fileContent;
+  console.log(file);
   const { setFormatToConvertFile } = useFileStore((state) => state);
   const getIconFromFileType = (fileType: string) => {
     switch (true) {
@@ -76,50 +85,53 @@ const FileCard = ({ fileContent, removeFile }: IFileCard) => {
         break;
     }
   };
-  const [typeOptions, setTypeOptions] = useState<string[]>([]);
-  const listExtensions = () => {
-    if (file.type.includes("image")) {
-      {
-        extensions.image?.map((type) => (
-          <Button
-            className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
-            key={Math.random()}
-          >
-            {type}
-          </Button>
-        ));
-      }
-    }
-    if (file.type.includes("video")) {
-      {
-        extensions.video?.map((type) => (
-          <Button
-            className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
-            key={Math.random()}
-          >
-            {type}
-          </Button>
-        ));
-      }
-    }
-    if (file.type.includes("audio")) {
-      {
-        extensions.audio?.map((type) => (
-          <Button
-            className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
-            key={Math.random()}
-          >
-            {type}
-          </Button>
-        ));
-      }
-    }
+  const getDefaulTab = () => {
+    if (file.type.includes("image")) return "images";
+    if (file.type.includes("audio")) return "audio";
+    if (file.type.includes("video")) return "video";
   };
 
-  useEffect(() => {
-    listExtensions();
-  }, []);
+  //   if (file.type.includes("image")) {
+  //     {
+  //       extensions.image?.map((type) => (
+  //         <Button
+  //           className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
+  //           key={Math.random()}
+  //         >
+  //           {type}
+  //         </Button>
+  //       ));
+  //     }
+  //   }
+  //   if (file.type.includes("video")) {
+  //     {
+  //       extensions.video?.map((type) => (
+  //         <Button
+  //           className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
+  //           key={Math.random()}
+  //         >
+  //           {type}
+  //         </Button>
+  //       ));
+  //     }
+  //   }
+  //   if (file.type.includes("audio")) {
+  //     {
+  //       extensions.audio?.map((type) => (
+  //         <Button
+  //           className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
+  //           key={Math.random()}
+  //         >
+  //           {type}
+  //         </Button>
+  //       ));
+  //     }
+  //   }
+  // };
 
+  // useEffect(() => {
+  //   listExtensions();
+  // }, []);
   return (
     <div className="w-full rounded-2xl border border-slate-600  px-10 py-5  text-white flex justify-between">
       <div className="flex items-center gap-5">
@@ -128,91 +140,108 @@ const FileCard = ({ fileContent, removeFile }: IFileCard) => {
       </div>
       <div className="flex items-center gap-5">
         <span>Convert to</span>
-        <Select>
+        <Select
+          value={to}
+          onValueChange={(value) => {
+            setFormatToConvertFile(value, id);
+          }}
+        >
           <SelectTrigger className="w-[180px] text-slate-50 bg-slate-600 bg-opacity-25 border border-slate-600 border-opacity-25 focus:ring-offset-0">
-            <SelectValue placeholder="Select a fruit" />
+            <SelectValue placeholder="Select a format" />
           </SelectTrigger>
           <SelectContent className="focus:ring-offset-0  bg-slate-900 p-1">
-            <Tabs defaultValue="images" className="w-[300px]">
-              <TabsList className="">
-                {file.type.includes("image") && (
-                  <TabsTrigger value="images">Images</TabsTrigger>
-                )}
-                {file.type.includes("video") && (
-                  <>
-                    <TabsTrigger value="video">Video</TabsTrigger>
-                    <TabsTrigger value="audio">Audio</TabsTrigger>
-                  </>
-                )}
-                {file.type.includes("audio") && (
-                  <TabsTrigger value="audio">Audio</TabsTrigger>
-                )}
+            <Tabs defaultValue={getDefaulTab()} className="h-auto">
+              <TabsList className="bg-transparent  border-white space-x-4 text-white active:text-black">
+                <TabsTrigger
+                  value="images"
+                  disabled={
+                    file.type.includes("video") || file.type.includes("audio")
+                  }
+                >
+                  Images
+                </TabsTrigger>
+
+                <TabsTrigger
+                  value="video"
+                  disabled={
+                    file.type.includes("image") || file.type.includes("audio")
+                  }
+                >
+                  Video
+                </TabsTrigger>
+                <TabsTrigger
+                  value="audio"
+                  disabled={file.type.includes("image")}
+                >
+                  Audio
+                </TabsTrigger>
               </TabsList>
-              <TabsContent value="video" className="">
-                <div className="grid grid-cols-4 gap-4">
-                  {extensions.video.map((type) => (
-                    <Button
-                      className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
-                      key={Math.random()}
-                      onClick={() => setFormatToConvertFile(type, id)}
-                    >
-                      {type}
-                    </Button>
-                  ))}
-                </div>
+              <TabsContent value="video" className="grid grid-cols-4 gap-3">
+                {extensions.video.map((type) => (
+                  <SelectItem
+                    value={type}
+                    key={Math.random()}
+                    className="bg-transparent border-2 border-slate-50 text-white flex items-center justify-center px-3 cursor-pointer gap-2 hover:bg-slate-50 hover:text-black"
+                  >
+                    {type}
+                  </SelectItem>
+                ))}
               </TabsContent>
-              <TabsContent value="audio" className="">
-                <div className="grid grid-cols-3 gap-4">
-                  {extensions.audio.map((type) => (
-                    <Button
-                      className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
-                      key={Math.random()}
-                      onClick={() => setFormatToConvertFile(type, id)}
-                    >
-                      {type}
-                    </Button>
-                  ))}
-                </div>
+              <TabsContent value="audio" className="grid grid-cols-3 gap-4">
+                {extensions.audio.map((type) => (
+                  <SelectItem
+                    value={type}
+                    className="bg-transparent border-2 border-slate-50 text-white flex items-center justify-center px-3 cursor-pointer gap-2 hover:bg-slate-50 hover:text-black"
+                    key={Math.random()}
+                  >
+                    {type}
+                  </SelectItem>
+                ))}
               </TabsContent>
-              <TabsContent value="images">
-                <div className="grid grid-cols-3 gap-4">
-                  {extensions.image.map((type) => (
-                    <Button
-                      className="p-1 bg-slate-300 text-black rounded flex items-center justify-center hover:bg-slate-700 hover:text-white"
-                      key={Math.random()}
-                      onClick={() => setFormatToConvertFile(type, id)}
-                    >
-                      {type}
-                    </Button>
-                  ))}
-                </div>
+              <TabsContent value="images" className="grid grid-cols-3 gap-4">
+                {extensions.image.map((type) => (
+                  <SelectItem
+                    value={type}
+                    key={Math.random()}
+                    className="bg-transparent border-2 border-slate-50 text-white flex items-center justify-center px-3 cursor-pointer gap-2 hover:bg-slate-50 hover:text-black"
+                  >
+                    {type}
+                  </SelectItem>
+                ))}
               </TabsContent>
             </Tabs>
-            <SelectGroup>
-              {/* {typeOptions?.map((type) => (
-                <SelectItem value={type} key={Math.random()}>
-                  {type}
-                </SelectItem>
-              ))} */}
-              {/* <SelectItem value="apple">Apple</SelectItem>
-              <SelectItem value="banana">Banana</SelectItem>
-              <SelectItem value="blueberry">Blueberry</SelectItem>
-              <SelectItem value="grapes">Grapes</SelectItem>
-              <SelectItem value="pineapple">Pineapple</SelectItem> */}
-            </SelectGroup>
           </SelectContent>
         </Select>
         <div className="text-3xl">
-          <Button
-            variant="default"
-            size="icon"
-            className=" hover:bg-slate-500  text-slate-50 bg-slate-600 bg-opacity-25 border border-slate-600 border-opacity-25"
-            onClick={() => {
-              removeFile(id);
-            }}
-          >
-            <RiCloseFill />
-          </Button>
+          {convertingStatus === 2 ? (
+            <CircleLoader
+              color={"white"}
+              loading={convertingStatus === 2}
+              cssOverride={override}
+              size={50}
+              aria-label="Loading Spinner"
+              data-testid="loader"
+            />
+          ) : (
+            <div className="flex gap-4 items-center justify-center">
+              <Button
+                variant="default"
+                size="icon"
+                className=" hover:bg-slate-500  text-slate-50 bg-slate-600 bg-opacity-25 border border-slate-600 border-opacity-25"
+                onClick={() => {
+                  removeFile(id);
+                }}
+              >
+                <RiCloseFill />
+              </Button>
+              {convertingStatus === 3 && (
+                <RiCheckboxCircleLine className="text-green-600" />
+              )}
+              {convertingStatus === 4 && (
+                <RiCloseCircleLine className="text-red-600" />
+              )}
+            </div>
+          )}
         </div>
       </div>
     </div>
