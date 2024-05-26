@@ -15,13 +15,22 @@ import { useDropzone } from "react-dropzone";
 import { useToast } from "./ui/use-toast";
 import { loadFfmpegService } from "@/utils/ffmpeg/loadFfmpeg";
 import { convertFile } from "@/utils/ffmpeg/convertFile";
-import { FileConvertingStatus } from "@/stores/fille-store";
+import { FileConvertingStatus } from "@/stores/file/types";
+import { useDownloadFile } from "@/shared/hooks/useDownloadFiles";
 
 const Dropzone = () => {
   const ffmpegRef = useRef<any>(null);
   const { toast } = useToast();
-  const { addFile, removeFile, files, isHover, setIsHover, setFileStatus } =
-    useFileStore((state) => state);
+  const {
+    addFile,
+    removeFile,
+    files,
+    convertedFiles,
+    isHover,
+    setIsHover,
+    setFileStatus,
+    pushConvertedFile,
+  } = useFileStore((state) => state);
   const { getRootProps, getInputProps } = useDropzone({
     accept: {
       "image/*": [],
@@ -46,11 +55,10 @@ const Dropzone = () => {
     },
     onFileDialogCancel() {},
   });
+  const { downloadAllFiles } = useDownloadFile();
   const dropzoneRef = useRef<HTMLDivElement>(null);
   const ConvertAll = async () => {
     files.map(async (file) => {
-      setFileStatus(file.id, FileConvertingStatus.Converting);
-
       try {
         if (file.to === "") {
           toast({
@@ -59,8 +67,26 @@ const Dropzone = () => {
           });
           return;
         }
-        await convertFile(ffmpegRef.current, file);
+        setFileStatus(file.id, FileConvertingStatus.Converting);
+
+        const { url, fileNameConverted, size, blob } = await convertFile(
+          ffmpegRef.current,
+          file
+        );
+        console.log(fileNameConverted);
         setFileStatus(file.id, FileConvertingStatus.Success);
+        const fileAlreadyConverted = convertedFiles.some(
+          (fileConverted) => fileConverted.fileId === file.id
+        );
+        if (!fileAlreadyConverted) {
+          pushConvertedFile({
+            fileId: file.id,
+            url: url,
+            size: size,
+            name: fileNameConverted,
+            blob: blob,
+          });
+        }
       } catch (error) {
         toast({
           variant: "destructive",
@@ -69,6 +95,9 @@ const Dropzone = () => {
         setFileStatus(file.id, FileConvertingStatus.Failed);
       }
     });
+  };
+  const handleDownloadAllFiles = () => {
+    downloadAllFiles(convertedFiles);
   };
   useEffect(() => {
     const handleFocus = () => {
@@ -144,7 +173,7 @@ const Dropzone = () => {
           </div>
         )}
       </section>
-      <div className="flex justify-end">
+      <div className="flex justify-end gap-3">
         <Button
           variant="secondary"
           className="w-[150px]"
@@ -155,6 +184,16 @@ const Dropzone = () => {
           <RiDownloadFill />
           Convert now
         </Button>
+        {convertedFiles.length > 0 && (
+          <Button
+            variant="secondary"
+            className="w-[150px]"
+            onClick={handleDownloadAllFiles}
+          >
+            <RiDownloadFill />
+            Download All
+          </Button>
+        )}
       </div>
     </section>
   );

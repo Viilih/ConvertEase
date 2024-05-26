@@ -26,11 +26,8 @@ export const convertFile = async (
     fileSize: fileToConvert.fileContent[0].size,
     typeToConvert: fileToConvert.to,
   };
-  const fileNameWithoutFormat = fileInfo.fileName.split(".");
-
+  const fileNameWithoutFormat = fileInfo.fileName.split(".")[0];
   const fileNameConverted = `${fileNameWithoutFormat}.${fileInfo.typeToConvert}`;
-  console.log(fileNameWithoutFormat);
-  console.log(fileInfo);
   await ffmpeg.writeFile(fileInfo.fileName, await fetchFile(fileInfo.file));
   await ffmpeg.exec(["-i", fileInfo.fileName, fileNameConverted]);
   const data = (await ffmpeg.readFile(fileNameConverted)) as any;
@@ -38,6 +35,6 @@ export const convertFile = async (
     type: `${fileInfo.file.type.split("/")[0]}/${fileInfo.typeToConvert}`,
   });
   const url = URL.createObjectURL(blob);
-  console.log(blob, url);
-  return { url };
+  console.log(blob, fileNameConverted, fileNameWithoutFormat);
+  return { url, fileNameConverted, size: blob.size, blob };
 };

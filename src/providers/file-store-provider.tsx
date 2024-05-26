@@ -1,9 +1,9 @@
 "use client";
 
+import { createFilesStore } from "@/stores/file/fille-store";
+import { FilesStore } from "@/stores/file/types";
 import { type ReactNode, createContext, useRef, useContext } from "react";
 import { type StoreApi, useStore } from "zustand";
-
-import { type FilesStore, createFilesStore } from "@/stores/fille-store";
 
 export const FilesStoreContext = createContext<StoreApi<FilesStore> | null>(
   null

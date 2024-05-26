@@ -18,8 +18,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import CircleLoader from "react-spinners/ClipLoader";
 import { Button } from "./ui/button";
 import { useFileStore } from "@/providers/file-store-provider";
-import { FileConvertingStatus } from "@/stores/fille-store";
+import { FileConvertingStatus } from "@/stores/file/types";
 import { CSSProperties } from "react";
+import { useDownloadFile } from "@/shared/hooks/useDownloadFiles";
+
 interface IFileCard {
   fileContent: {
     file: File;
@@ -71,7 +73,7 @@ const extensions = {
 };
 const FileCard = ({ fileContent, removeFile }: IFileCard) => {
   const { file, id, to, convertingStatus } = fileContent;
-  console.log(file);
+  const { downloadSingleFile } = useDownloadFile();
   const { setFormatToConvertFile } = useFileStore((state) => state);
   const getIconFromFileType = (fileType: string) => {
     switch (true) {
@@ -235,7 +237,18 @@ const FileCard = ({ fileContent, removeFile }: IFileCard) => {
                 <RiCloseFill />
               </Button>
               {convertingStatus === 3 && (
-                <RiCheckboxCircleLine className="text-green-600" />
+                <>
+                  <RiCheckboxCircleLine className="text-green-600" />
+                  <Button
+                    variant="outline"
+                    className="bg-transparent"
+                    onClick={() => {
+                      downloadSingleFile({ id });
+                    }}
+                  >
+                    Fazer download
+                  </Button>
+                </>
               )}
               {convertingStatus === 4 && (
                 <RiCloseCircleLine className="text-red-600" />

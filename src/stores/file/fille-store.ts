@@ -1,40 +1,12 @@
 import { useCallback } from "react";
-import { FileRejection } from "react-dropzone";
 import { createStore } from "zustand/vanilla";
 import { v4 as uuidv4 } from "uuid";
+import { FileConvertingStatus, FilesState, FilesStore } from "./types";
 
-export enum FileConvertingStatus {
-  Blank = 1,
-  Converting = 2,
-  Success = 3,
-  Failed = 4,
-}
-export type FilesState = {
-  files: {
-    fileContent: File[];
-    id: string;
-    to: string;
-    converting: FileConvertingStatus;
-  }[];
-  isHover: boolean;
-};
-
-export type FilesActions = {
-  addFile: <T extends File>(
-    acceptedFiles: T[],
-    rejectedFiles: FileRejection[]
-  ) => void;
-  removeFile: (id: string) => void;
-  setIsHover: (isHover: boolean) => void;
-  setFormatToConvertFile: (type: string, id: string) => void;
-  setFileStatus: (id: string, status: FileConvertingStatus) => void;
-};
-
-export type FilesStore = FilesState & FilesActions;
-
-export const defaultFilesInitialState: FilesState = {
+const defaultFilesInitialState: FilesState = {
   files: [],
   isHover: false,
+  convertedFiles: [],
 };
 
 export const createFilesStore = (
@@ -58,7 +30,12 @@ export const createFilesStore = (
       }
     }, []),
     removeFile: (id) => {
-      set((state) => ({ files: state.files.filter((file) => file.id !== id) }));
+      set((state) => ({
+        files: state.files.filter((file) => file.id !== id),
+        convertedFiles: state.convertedFiles.filter(
+          (file) => file.fileId !== id
+        ),
+      }));
     },
     setFileStatus: (id, status) =>
       set((state) => ({
@@ -74,6 +51,11 @@ export const createFilesStore = (
         files: state.files.map((file) =>
           file.id === id ? { ...file, to: type } : file
         ),
+      }));
+    },
+    pushConvertedFile: (data) => {
+      set((state) => ({
+        convertedFiles: [...state.convertedFiles, data],
       }));
     },
   }));
