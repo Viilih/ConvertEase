@@ -58,43 +58,70 @@ const Dropzone = () => {
   const { downloadAllFiles } = useDownloadFile();
   const dropzoneRef = useRef<HTMLDivElement>(null);
   const ConvertAll = async () => {
-    files.map(async (file) => {
-      try {
-        if (file.to === "") {
+    try {
+      const conversionPromises = files.map(async (file) => {
+        try {
+          if (file.to === "") {
+            toast({
+              variant: "destructive",
+              title: "At least one type of format should be selected",
+            });
+            return;
+          }
+
+          setFileStatus(file.id, FileConvertingStatus.Converting);
+
+          const { url, fileNameConverted, size, blob } = await convertFile(
+            ffmpegRef.current,
+            file
+          );
+
+          setFileStatus(file.id, FileConvertingStatus.Success);
+          const fileAlreadyConverted = convertedFiles.some(
+            (fileConverted) => fileConverted.fileId === file.id
+          );
+
+          if (!fileAlreadyConverted) {
+            pushConvertedFile({
+              fileId: file.id,
+              url: url,
+              size: size,
+              name: fileNameConverted,
+              blob: blob,
+            });
+          }
+        } catch (error) {
           toast({
             variant: "destructive",
-            title: "At least one type of format should be selected",
+            title: "Something went wrong during the operation",
           });
-          return;
+          console.error(error);
+          setFileStatus(file.id, FileConvertingStatus.Failed);
         }
-        setFileStatus(file.id, FileConvertingStatus.Converting);
-
-        const { url, fileNameConverted, size, blob } = await convertFile(
-          ffmpegRef.current,
-          file
-        );
-        console.log(fileNameConverted);
-        setFileStatus(file.id, FileConvertingStatus.Success);
-        const fileAlreadyConverted = convertedFiles.some(
-          (fileConverted) => fileConverted.fileId === file.id
-        );
-        if (!fileAlreadyConverted) {
-          pushConvertedFile({
-            fileId: file.id,
-            url: url,
-            size: size,
-            name: fileNameConverted,
-            blob: blob,
-          });
-        }
-      } catch (error) {
-        toast({
-          variant: "destructive",
-          title: "Something went wrong during the operation",
-        });
+      });
+      await Promise.all(conversionPromises);
+    } catch (error) {
+      toast({
+        variant: "destructive",
+        title: "Something went wrong during the operation",
+      });
+      console.error(error);
+      files.forEach((file) => {
         setFileStatus(file.id, FileConvertingStatus.Failed);
-      }
-    });
+      });
+    }
+  };
+  const disabledConvertButton = () => {
+    let isConverting = files.some(
+      (file) => file.converting === FileConvertingStatus.Converting
+    );
+    return isConverting;
+  };
+  const disabledDownloadButton = () => {
+    let isConverting = files.some(
+      (file) => file.converting === FileConvertingStatus.Converting
+    );
+    return isConverting;
   };
   const handleDownloadAllFiles = () => {
     downloadAllFiles(convertedFiles);
@@ -180,6 +207,7 @@ const Dropzone = () => {
           onClick={() => {
             ConvertAll();
           }}
+          disabled={disabledConvertButton()}
         >
           <RiDownloadFill />
           Convert now
@@ -189,6 +217,7 @@ const Dropzone = () => {
             variant="secondary"
             className="w-[150px]"
             onClick={handleDownloadAllFiles}
+            disabled={disabledDownloadButton()}
           >
             <RiDownloadFill />
             Download All

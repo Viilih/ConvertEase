@@ -37,26 +37,11 @@ const override: CSSProperties = {
   borderColor: "white",
 };
 const extensions = {
-  image: [
-    "jpg",
-    "jpeg",
-    "png",
-    "gif",
-    "bmp",
-    "webp",
-    "ico",
-    "tif",
-    "tiff",
-    "svg",
-    "raw",
-    "tga",
-  ],
+  image: ["jpg", "jpeg", "png", "gif", "bmp", "webp"],
   video: [
     "mp4",
     "m4v",
-    "mp4v",
     "3gp",
-    "3g2",
     "avi",
     "mov",
     "wmv",
@@ -90,7 +75,12 @@ const FileCard = ({ fileContent, removeFile }: IFileCard) => {
   const getDefaulTab = () => {
     if (file.type.includes("image")) return "images";
     if (file.type.includes("audio")) return "audio";
-    if (file.type.includes("video")) return "video";
+    if (file.type.includes("video")) {
+      if (to.length > 0 && extensions.audio.includes(to)) {
+        return "audio";
+      }
+      return "video";
+    }
   };
 
   //   if (file.type.includes("image")) {
@@ -138,7 +128,10 @@ const FileCard = ({ fileContent, removeFile }: IFileCard) => {
     <div className="w-full rounded-2xl border border-slate-600  px-10 py-5  text-white flex justify-between">
       <div className="flex items-center gap-5">
         <div className="text-4xl">{getIconFromFileType(file.type)}</div>
-        <span>{file.name}</span>
+        <div>
+          <p>{file.name}</p>
+          <p></p>
+        </div>
       </div>
       <div className="flex items-center gap-5">
         <span>Convert to</span>
