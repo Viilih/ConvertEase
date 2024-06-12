@@ -12,7 +12,11 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className} suppressHydrationWarning={true}>
-        <FilesStoreProvider>{children}</FilesStoreProvider>
+        <FilesStoreProvider>
+          <main className="flex min-h-screen flex-col items-center pt-28 px-28 bg-slate-950 gap-10">
+            {children}
+          </main>
+        </FilesStoreProvider>
       </body>
     </html>
   );

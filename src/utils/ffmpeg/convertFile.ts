@@ -1,25 +1,11 @@
+import {
+  IFileConvert,
+  IFileConversionResult,
+  IFileInfo,
+} from "@/shared/interfaces";
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { fetchFile } from "@ffmpeg/util";
-interface IFileConvert {
-  fileContent: File[];
-  id: string;
-  to: string;
-}
 
-interface IFileInfo {
-  file: File;
-  fileName: string;
-  fileType: string;
-  fileSize: number;
-  typeToConvert: string;
-}
-
-interface IFileConversionResult {
-  url: string;
-  fileNameConverted: string;
-  size: number;
-  blob: Blob;
-}
 export const convertFile = async (
   ffmpegRef: FFmpeg,
   fileToConvert: IFileConvert

@@ -18,19 +18,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "./ui/tabs";
 import CircleLoader from "react-spinners/ClipLoader";
 import { Button } from "./ui/button";
 import { useFileStore } from "@/providers/file-store-provider";
-import { FileConvertingStatus } from "@/stores/file/types";
 import { CSSProperties } from "react";
 import { useDownloadFile } from "@/shared/hooks/useDownloadFiles";
+import { IFileCard } from "@/shared/interfaces";
 
-interface IFileCard {
-  fileContent: {
-    file: File;
-    id: string;
-    to: string;
-    convertingStatus: FileConvertingStatus;
-  };
-  removeFile: (id: string) => void;
-}
 const override: CSSProperties = {
   display: "block",
   margin: "0 auto",

@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export default function Home() {
   return (
-    <main className="flex min-h-screen flex-col items-center pt-28 px-28 bg-slate-950 gap-20">
+    <>
       <div className="flex flex-col gap-3 text-justify">
         <h1 className="text-bold text-3xl text-white tracking-wider text-center">
           File Converter
@@ -22,6 +22,6 @@ export default function Home() {
       </div>
       <Dropzone />
       <Toaster />
-    </main>
+    </>
   );
 }

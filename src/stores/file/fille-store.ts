@@ -16,16 +16,16 @@ export const createFilesStore = (
     ...initialState,
     addFile: useCallback((acceptedFiles, _) => {
       if (acceptedFiles?.length > 0) {
+        const newFiles = acceptedFiles.map((file) => ({
+          fileContent: [file],
+          id: uuidv4(),
+          to: "",
+          converting: FileConvertingStatus.Blank,
+        }));
+
         set((state) => ({
-          files: [
-            ...state.files,
-            {
-              fileContent: [...acceptedFiles],
-              id: uuidv4(),
-              to: "",
-              converting: FileConvertingStatus.Blank,
-            },
-          ],
+          files: [...state.files, ...newFiles],
+          isHover: false,
         }));
       }
     }, []),

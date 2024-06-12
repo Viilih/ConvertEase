@@ -1,6 +1,5 @@
 import { FFmpeg } from "@ffmpeg/ffmpeg";
 import { toBlobURL } from "@ffmpeg/util";
-import { useRef } from "react";
 
 export const loadFfmpegService = async (): Promise<FFmpeg> => {
   const ffmpeg = new FFmpeg();

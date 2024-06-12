@@ -170,7 +170,7 @@ const Dropzone = () => {
         tabIndex={0}
         className="space-y-5 focus:outline-none focus:border-none focus:ring-offset-0"
       >
-        <ul className="flex flex-col gap-4">
+        <ul className="flex flex-col gap-4 max-h-72 overflow-y-scroll scroll-m-20">
           {files?.map((file) => {
             return (
               <li key={uuidv4()}>
