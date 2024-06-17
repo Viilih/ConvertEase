@@ -7,7 +7,7 @@ export default function Home() {
     <>
       <div className="flex flex-col gap-3 text-justify">
         <h1 className="text-bold text-3xl text-white tracking-wider text-center">
-          File Converter
+          Convert Ease
         </h1>
 
         <p className="text-slate-200 text-center">
