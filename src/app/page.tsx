@@ -1,7 +1,6 @@
 "use client";
 import Dropzone from "@/components/Dropzone";
 import { Toaster } from "@/components/ui/toaster";
-import Image from "next/image";
 
 export default function Home() {
   return (
