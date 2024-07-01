@@ -1,4 +1,3 @@
-import { useCallback } from "react";
 import { createStore } from "zustand/vanilla";
 import { v4 as uuidv4 } from "uuid";
 import { FileConvertingStatus, FilesState, FilesStore } from "./types";
@@ -14,7 +13,7 @@ export const createFilesStore = (
 ) => {
   return createStore<FilesStore>()((set) => ({
     ...initialState,
-    addFile: useCallback((acceptedFiles, _) => {
+    addFile: (acceptedFiles) => {
       if (acceptedFiles?.length > 0) {
         const newFiles = acceptedFiles.map((file) => ({
           fileContent: [file],
@@ -28,7 +27,7 @@ export const createFilesStore = (
           isHover: false,
         }));
       }
-    }, []),
+    },
     removeFile: (id) => {
       set((state) => ({
         files: state.files.filter((file) => file.id !== id),

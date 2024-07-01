@@ -9,7 +9,6 @@ export default function Home() {
         <h1 className="text-bold text-3xl text-white tracking-wider text-center">
           Convert Ease
         </h1>
-
         <p className="text-slate-200 text-center">
           Welcome to ConvertEase, your free file converter. Here, you can
           effortlessly transform your files to various formats.

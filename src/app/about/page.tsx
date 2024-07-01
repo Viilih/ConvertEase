@@ -1,4 +1,6 @@
-export default function AboutPage() {
+"use client";
+
+export default function About() {
   return (
     <div className="text-white p-6">
       <h2 className="text-4xl font-bold mb-6">About ConvertEase</h2>
